@@ -1,0 +1,7 @@
+package yas.proto;
+
+message Message {
+	required string id = 1;
+
+	optional bytes data = 2;
+}

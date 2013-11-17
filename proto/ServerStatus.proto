@@ -1,0 +1,11 @@
+package yas.proto;
+
+message ServerStatusQuery {
+}
+
+
+message ServerStatusAnswer {
+	required int32 isListening = 1;
+	required int32 childCount = 2;
+	repeated string messageHandlers = 3;
+}
