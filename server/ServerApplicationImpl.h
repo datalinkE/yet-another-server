@@ -3,6 +3,8 @@
 
 #include <string>
 #include <queue>
+#include <memory>
+#include "message/MessageDispatcher.h"
 
 class ServerApplicationImpl
 // actual internal implementation hides system calls complexity
@@ -18,6 +20,7 @@ private:
     bool _shouldStop;
     std::queue<int> _childrenPids;
     // queue is for easy one-by-one creation and stopping in FIFO manner
+    MessageDispatcher _dispatcher;
 
 
 public:
@@ -50,6 +53,8 @@ public:
     void shutdown();
     // this function sets _shouldStop variable which is false by default
     // then application do all remaining work and ends gracefully
+
+    friend class ServerStatusMessageDispatcher;
 
 private:
     bool createListeningSocket();

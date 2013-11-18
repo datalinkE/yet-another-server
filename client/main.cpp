@@ -1,7 +1,4 @@
 #include <iostream>
-
-using namespace std;
-
 #include <cstdlib>
 #include <cstdio>
 #include <unistd.h>
@@ -11,11 +8,18 @@ using namespace std;
 #include <arpa/inet.h>
 #include <string.h>
 
+#include <string>
+#include <vector>
+#include "Message.pb.h"
+#include "ServerStatus.pb.h"
+
+using namespace std;
+
 void child_func(int childnum);
 
 int main(int argc, char *argv[])
 {
-    int nchildren = 1;
+    int nchildren = 2;
     int pid;
     int x;
 
@@ -27,17 +31,17 @@ int main(int argc, char *argv[])
     }
 
     wait(NULL);
-
+    sleep(1);
     return 0;
 }
 
-const size_t SIZE_BUFFER = 25;
+const size_t SIZE_BUFFER = 0x1000;
 
 void child_func(int childnum)
 {
     int sock;
     struct sockaddr_in sAddr;
-    char buffer[25];
+    char buffer[SIZE_BUFFER];
     int x;
     int result;
     size_t bytes_sent, bytes_recieved;
@@ -54,21 +58,51 @@ void child_func(int childnum)
 
     result = connect(sock, (const struct sockaddr *) &sAddr, sizeof(sAddr));
     if (result != 0) {
-        ::cerr << "yas-client " << result << ::endl;
+        cerr << "yas-client " << result << ::endl;
       return;
     }
 
-    snprintf(buffer, SIZE_BUFFER, "data from client #%i.", childnum);
-    sleep(1);
-    bytes_sent = send(sock, buffer, strlen(buffer), 0);
-    ::cout << "yas-client #" << childnum
-           <<" sent "<< bytes_sent << " chars" << ::endl;
-    sleep(1);
-    bytes_recieved = recv(sock, buffer, SIZE_BUFFER, 0);
-    ::cout << "yas-client #" << childnum
-           <<" recieved "<< bytes_recieved << " chars" << ::endl;
-    sleep(1);
+    yas::proto::Message q;
+    q.set_id("ServerStatus");
 
+    string serialQ= q.SerializeAsString();
+    size_t serialSize = serialQ.size();
+
+    bytes_sent = send(sock, &serialSize, sizeof(size_t), 0);
+    sleep(1);
+    cout << "yas-client #" << childnum
+           <<" sent "<< bytes_sent << " (message size)" << ::endl;
+
+    bytes_sent = send(sock, serialQ.data() , serialSize, 0);
+    sleep(1);
+    cout << "yas-client #" << childnum
+           <<" sent "<< bytes_sent << " (message)" << ::endl;
+
+    bytes_recieved = recv(sock, &serialSize, sizeof(size_t), 0);
+    sleep(1);
+    cout << "yas-client #" << childnum
+           <<" recieved "<< bytes_recieved << " bytes(message size)" << ::endl;
+
+    bytes_recieved = recv(sock, buffer, serialSize, 0);
+    sleep(1);
+    cout << "yas-client #" << childnum
+           <<" recieved "<< bytes_recieved << " bytes(message)" << ::endl;
+
+    yas::proto::Message ans_msg;
+    ans_msg.ParseFromArray(buffer, serialSize);
+
+    cout << ans_msg.id() << endl;
+    yas::proto::ServerStatusAnswer ans;
+    ans.ParseFromString(ans_msg.data());
+
+    cout << "version: " << ans.version() << endl;
+    cout << "childs: " << ans.childcount() << endl;
+    cout << "message processors: ";
+    for(int i = 0 ; i < ans.messageprocessors_size(); i ++)
+    {
+        cout << ans.messageprocessors(i) << " ";
+    }
+    cout << endl;
     close(sock);
 }
 

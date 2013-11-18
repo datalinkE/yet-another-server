@@ -16,9 +16,9 @@ bool ServerApplicationImpl::isChild()
 
 void ServerApplicationImpl::shutdown()
 {
-    ::clog
+    clog
            << ( isChild() ? "child" : "parent")
-           << " termination requested" << ::endl;
+           << " termination requested" << endl;
     _shouldStop = true;
 }
 
@@ -36,7 +36,7 @@ bool ServerApplicationImpl::createListeningSocket()
 
     if(_listenSocketId < 0)
     {
-        ::clog << "socket() fails with " << errno << ::endl;
+        clog << "socket() fails with " << errno << endl;
         return false;
     }
 
@@ -52,7 +52,7 @@ bool ServerApplicationImpl::setListeningSocketOptions()
 
     if (call_result < 0)
     {
-        ::clog << "setsockopt() fails with " << call_result << ::endl;
+        clog << "setsockopt() fails with " << call_result << endl;
         return false;
     }
     return true;
@@ -71,7 +71,7 @@ bool ServerApplicationImpl::bindListeningSocket()
     call_result = bind(_listenSocketId, (struct sockaddr *) &sAddr, sizeof(sAddr));
     if (call_result < 0)
     {
-        ::clog << "bind() fails with " << call_result << ::endl;
+        clog << "bind() fails with " << call_result << endl;
         return false;
     }
     return true;
@@ -84,7 +84,7 @@ bool ServerApplicationImpl::runListening()
     call_result = listen(_listenSocketId, _listen_count);
     if (call_result < 0)
     {
-        ::clog << "listen() fails with" << call_result << ::endl;
+        clog << "listen() fails with" << call_result << endl;
         return false;
     }
     return true;

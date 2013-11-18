@@ -21,6 +21,8 @@ private:
     MessageDispatcher * mDispatcher;
 
     virtual answer_type doProcessing(const query_type & query);
+
+    const int VERSION = 1;
 };
 
 #endif // SERVERSTATUSMESSAGEPROCESSOR_H

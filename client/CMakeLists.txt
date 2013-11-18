@@ -25,6 +25,22 @@ add_definitions(-std=c++11)
 
 project(yas-client)
 
+
+find_package(Protobuf REQUIRED)
+include_directories(${PROTOBUF_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+set (ProtobufTestsProtoSources
+    ../proto/Message.proto
+    ../proto/ServerStatus.proto
+    ../proto/Echo.proto
+)
+
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${ProtobufTestsProtoSources})
+
 aux_source_directory(. SRC_LIST)
-add_executable(${PROJECT_NAME} ${SRC_LIST})
+add_executable(${PROJECT_NAME} ${SRC_LIST} ${PROTO_SRCS} ${PROTO_HDRS})
+
+target_link_libraries(yas-client ${PROTOBUF_LIBRARY})
+
 

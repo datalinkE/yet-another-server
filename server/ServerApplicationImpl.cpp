@@ -6,10 +6,11 @@
 #include <netinet/in.h>
 
 #include "ServerApplicationImpl.h"
+#include "message/ServerStatusMessageProcessor.h"
 
 using namespace std;
 
-ServerApplicationImpl::ServerApplicationImpl(unsigned short port, const ::string name) :
+ServerApplicationImpl::ServerApplicationImpl(unsigned short port, const string name) :
     _name(name),
     _listen_count(5),       // suggested in Apress "Definitive guide..." book as default value for listening queue
     _listenSocketId(-1),    // valid descriptors are non-negative
@@ -19,9 +20,11 @@ ServerApplicationImpl::ServerApplicationImpl(unsigned short port, const ::string
 // the constructor makes all necessary system calls to set
 // listening TCP stream socket on the specified port
 {
-    ::clog << "server started" << ::endl;
+    clog  << endl << "server started" << endl;
 
     _parrentPid = getpid();
+
+    _dispatcher.addProcessor( make_shared<ServerStatusMessageProcessor> (&_dispatcher));
 
     _isListening =
         createListeningSocket() &&
@@ -29,7 +32,7 @@ ServerApplicationImpl::ServerApplicationImpl(unsigned short port, const ::string
         bindListeningSocket() &&
         runListening();
     if(_isListening)
-        ::clog << "is listening on port " << _port << ::endl;
+        clog << "is listening on port " << _port << endl;
 }
 
 
@@ -38,7 +41,7 @@ bool ServerApplicationImpl::forkChildren(size_t children_count)
 {
     if(_isListening)
     {
-        ::clog << "creating " << children_count << " worker processes" << ::endl;
+        clog << "creating " << children_count << " worker processes" << endl;
 
         for (size_t i = 0; i < children_count; i++)
         {
@@ -51,11 +54,11 @@ bool ServerApplicationImpl::forkChildren(size_t children_count)
             else if (pid > 0)
             {
                 _childrenPids.push(pid);
-                ::clog << "child process with " << pid <<  " created" << ::endl;
+                clog << "child process with " << pid <<  " created" << endl;
             }
             else
             {
-                ::clog << "child process creation error " << errno << ::endl;
+                clog << "child process creation error " << errno << endl;
             }
         }
         return true;
@@ -75,12 +78,12 @@ void ServerApplicationImpl::parentProcessLoop()
         }
 
         stopChildren();
-        ::clog << "waiting for child processes termination" << ::endl;
+        clog << "waiting for child processes termination" << endl;
         wait(NULL); // waiting all childs to finish
     }
 
-    ::clog << "parent closed" << ::endl;
-    ::clog << "server stopped" << ::endl;
+    clog << "parent closed" << endl;
+    clog << "server stopped" << endl;
 }
 
 void ServerApplicationImpl::stopChildren(size_t children_count)
@@ -92,7 +95,7 @@ void ServerApplicationImpl::stopChildren(size_t children_count)
     while(i < count)
     {
         int pid = _childrenPids.front();
-        ::clog << "sending SIGTERM to child " << pid << ::endl;
+        clog << "sending SIGTERM to child " << pid << endl;
         kill(pid, SIGTERM);
         _childrenPids.pop();
         i++;

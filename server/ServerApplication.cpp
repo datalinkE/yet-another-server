@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 
 #include "ServerApplication.h"
 #include "ServerApplicationImpl.h"
@@ -7,10 +8,10 @@ using namespace std;
 
 ServerApplication::ServerApplication(unsigned short port, const ::string name)
 {
-    _log = ::make_shared<StreamLog>( name, LOG_LOCAL0 );
-    ::clog.rdbuf(_log.get());
+    _log = make_shared<StreamLog>( name, LOG_LOCAL0 );
+    std::clog.rdbuf(_log.get());
 
-    _impl = ::make_shared<ServerApplicationImpl>(port, name);
+    _impl = make_shared<ServerApplicationImpl>(port, name);
 }
 
 bool ServerApplication::forkChildren(size_t children_count)
