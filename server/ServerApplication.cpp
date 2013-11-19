@@ -26,7 +26,7 @@ void ServerApplication::stopChildren(size_t children_count)
 
 size_t ServerApplication::runningChildrenCount()
 {
-    return 0;
+    return _impl->runningChildrenCount();
 }
 
 void ServerApplication::shutdown()

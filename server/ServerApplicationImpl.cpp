@@ -4,6 +4,7 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <dlfcn.h>
 
 #include "ServerApplicationImpl.h"
 #include "message/ServerStatusMessageProcessor.h"
@@ -20,11 +21,12 @@ ServerApplicationImpl::ServerApplicationImpl(unsigned short port, const string n
 // the constructor makes all necessary system calls to set
 // listening TCP stream socket on the specified port
 {
-    clog  << endl << "server started" << endl;
+    clog  << "===" << endl << _name << " started" << endl;
 
     _parrentPid = getpid();
 
-    _dispatcher.addProcessor( make_shared<ServerStatusMessageProcessor> (&_dispatcher));
+    _dispatcher.addProcessor( make_shared<ServerStatusMessageProcessor> (this));
+    loadMessageProcessorFromLibrary("./libEchoMessageProcessor.so");
 
     _isListening =
         createListeningSocket() &&
@@ -33,6 +35,21 @@ ServerApplicationImpl::ServerApplicationImpl(unsigned short port, const string n
         runListening();
     if(_isListening)
         clog << "is listening on port " << _port << endl;
+}
+
+ServerApplicationImpl::~ServerApplicationImpl()
+{
+/* not a good idea
+ * we store some shared pointer objects obtained from the library (in our _dispatcher
+ * we'll get segfault on dlcose call
+ *
+ * so, just let the system unload library when needed
+ *
+    for(void* handle : _loadedLibs)
+    {
+        dlclose(handle);
+    }
+*/
 }
 
 
@@ -90,7 +107,7 @@ void ServerApplicationImpl::stopChildren(size_t children_count)
 {
     size_t i = 0;
     size_t count = (children_count == 0 ? _childrenPids.size() :
-                                          ::min(_childrenPids.size(), children_count));
+                                          min(_childrenPids.size(), children_count));
 
     while(i < count)
     {

@@ -4,14 +4,24 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <dlfcn.h>
+
+#include <string>
 
 #include "ServerApplicationImpl.h"
+
+#include "message/MessageProcessorFactoryMethod.h"
 
 using namespace std;
 
 bool ServerApplicationImpl::isChild()
 {
     return _parrentPid != getpid();
+}
+
+size_t ServerApplicationImpl::runningChildrenCount()
+{
+    return _childrenPids.size();
 }
 
 void ServerApplicationImpl::shutdown()
@@ -88,4 +98,35 @@ bool ServerApplicationImpl::runListening()
         return false;
     }
     return true;
+}
+
+
+void ServerApplicationImpl::loadMessageProcessorFromLibrary(std::string name)
+{
+    void* handle = dlopen(name.c_str(), RTLD_LAZY);
+
+    if(handle == NULL)
+    {
+        clog << dlerror() << endl;
+        return;
+    }
+
+    _loadedLibs.push_back(handle);
+    clog << name << " loaded" << endl;
+
+
+    MessageProcessorFactoryMethod fact =
+            reinterpret_cast<MessageProcessorFactoryMethod>(dlsym(handle, "get_message_processor"));
+    // ugly, but sustem call returns void* function pointer
+
+    if(fact)
+    {
+        SpMessageProcessorBase mp = fact();
+        _dispatcher.addProcessor(mp);
+    }
+    else
+    {
+        clog << dlerror() << endl;
+        clog << "error loading factory method" << endl;
+    }
 }

@@ -6,6 +6,5 @@ message ServerStatusQuery {
 
 message ServerStatusAnswer {
 	required int32 version = 1;
-	required int32 childCount = 2;
-	repeated string messageProcessors = 3;
+	repeated string messageProcessors = 2;
 }

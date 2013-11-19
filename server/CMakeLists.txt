@@ -70,4 +70,4 @@ set(SRC_SHARED
 add_library(EchoMessageProcessor SHARED ${SRC_SHARED} ${PROTO_HDRS})
 add_executable(${PROJECT_NAME} ${SRC_LIST} ${SRC_LIST_MESSAGE} ${PROTO_SRCS} ${PROTO_HDRS})
 
-target_link_libraries(yas-server ${PROTOBUF_LIBRARY})
+target_link_libraries(yas-server ${PROTOBUF_LIBRARY} dl)

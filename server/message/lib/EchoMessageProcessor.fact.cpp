@@ -1,7 +1,12 @@
 #include "../MessageProcessorFactoryMethod.h"
 #include "../EchoMessageProcessor.h"
 
-SpMessageProcessorBase get_message_processor()
+// not sure if this is the right way
+// but othervise i get name mangling and can't obtain my symbol
+extern "C"
 {
-    return std::make_shared<EchoMessageProcessor>();
+    SpMessageProcessorBase get_message_processor()
+    {
+        return std::make_shared<EchoMessageProcessor>();
+    }
 }

@@ -14,7 +14,6 @@ void ServerApplicationImpl::childProcessLoop()
     if(_isListening)
     {
         int newsock;
-        int nread;
         vector<char> buffer;
 
         while (!_shouldStop)
@@ -26,7 +25,7 @@ void ServerApplicationImpl::childProcessLoop()
                 clog << "client connected to child process " << getpid() << endl;
 
                 size_t serial_size = 0;
-                nread = recv(newsock, &serial_size, sizeof(serial_size), 0);
+                int nread = recv(newsock, &serial_size, sizeof(serial_size), 0);
 
                 clog << "got message size, expecting " << serial_size << " bytes" << endl;
 
@@ -41,27 +40,49 @@ void ServerApplicationImpl::childProcessLoop()
                 while(bytes_recieved < serial_size)
                 {
                     nread = recv(newsock, buffer.data() + bytes_recieved, serial_size - bytes_recieved, 0);
-                    bytes_recieved += nread;
-
-                    clog << "got " << nread << " bytes" << endl;
+                    if(nread > 0)
+                    {
+                        bytes_recieved += nread;
+                        clog << "got " << nread << " bytes" << endl;
+                    }
+                    else
+                        break;
                 }
 
-                yas::proto::Message q;
-                q.ParseFromArray(buffer.data(), serial_size);
-
-                yas::proto::Message ans = _dispatcher.dispatch(q);
-
-                clog << "message dispatched" << endl;
-
-                string serial_ans = ans.SerializeAsString();
-                serial_size = serial_ans.length();
+                try
+                {
+                    yas::proto::Message q;
+                    q.ParseFromArray(buffer.data(), serial_size);
 
 
-                clog << "sending ans length " << serial_size << " back to client" << endl;
-                send(newsock, &serial_size, 4, 0);
+                    yas::proto::Message ans = _dispatcher.dispatch(q);
 
-                size_t bytes_sent = send(newsock, serial_ans.data(), serial_size, 0);
-                clog << "sending " << bytes_sent << " bytes message back to client" << endl;
+                    clog << "message dispatched" << endl;
+
+                    string serial_ans = ans.SerializeAsString();
+                    serial_size = serial_ans.length();
+
+                    clog << "sending ans length " << serial_size << " back to client" << endl;
+                    send(newsock, &serial_size, 4, 0);
+
+                    size_t bytes_sent = 0;
+
+                    while(bytes_sent < serial_size)
+                    {
+                        int nbytes = send(newsock, serial_ans.data() + bytes_sent, serial_size - bytes_sent, 0);
+                        if(nbytes > 0)
+                        {
+                            bytes_sent += nbytes;
+                            clog << "sending " << nbytes << " bytes back to client" << endl;
+                        }
+                        else
+                            break;
+                    }
+                }
+                catch(...)
+                {
+                    clog << "message can't be dispatched' " << getpid() << endl;
+                }
 
                 close(newsock);
 

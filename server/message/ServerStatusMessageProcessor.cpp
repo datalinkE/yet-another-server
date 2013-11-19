@@ -4,8 +4,8 @@ using namespace yas::proto;
 
 
 
-ServerStatusMessageProcessor::ServerStatusMessageProcessor(MessageDispatcher * dispatcher)
-    : mDispatcher(dispatcher)
+ServerStatusMessageProcessor::ServerStatusMessageProcessor(ServerApplicationImpl* server)
+    : _server(server)
 {
 }
 
@@ -19,9 +19,8 @@ ServerStatusAnswer ServerStatusMessageProcessor::doProcessing(const ServerStatus
     ServerStatusAnswer s;
 
     s.set_version(VERSION);
-    s.set_childcount(0);
 
-    const MessageDispatcher::DispatcherMap & mdImpl = mDispatcher->registeredProcessors();
+    const MessageDispatcher::DispatcherMap & mdImpl = _server->_dispatcher.registeredProcessors();
 
     for (auto it = mdImpl.begin(); it != mdImpl.end(); ++it)
     {

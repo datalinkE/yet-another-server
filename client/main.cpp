@@ -96,7 +96,6 @@ void child_func(int childnum)
     ans.ParseFromString(ans_msg.data());
 
     cout << "version: " << ans.version() << endl;
-    cout << "childs: " << ans.childcount() << endl;
     cout << "message processors: ";
     for(int i = 0 ; i < ans.messageprocessors_size(); i ++)
     {
