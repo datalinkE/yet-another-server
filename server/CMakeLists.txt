@@ -62,15 +62,12 @@ set(SRC_LIST_MESSAGE
 
 
 set(SRC_SHARED
-    ./message/MessageProcessorBase.h
-    ./message/MessageProcessorBase.cpp
-    ./message/MessageProcessorVirtualTemplate.h
     ./message/EchoMessageProcessor.h
     ./message/EchoMessageProcessor.cpp
     ./message/MessageProcessorFactoryMethod.h
     ./message/lib/EchoMessageProcessor.fact.cpp)
 
-add_library(EchoMessageProcessor SHARED ${SRC_SHARED})
+add_library(EchoMessageProcessor SHARED ${SRC_SHARED} ${PROTO_HDRS})
 add_executable(${PROJECT_NAME} ${SRC_LIST} ${SRC_LIST_MESSAGE} ${PROTO_SRCS} ${PROTO_HDRS})
 
 target_link_libraries(yas-server ${PROTOBUF_LIBRARY})
