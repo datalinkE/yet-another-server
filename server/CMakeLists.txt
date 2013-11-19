@@ -19,7 +19,8 @@ if(USE_CLANG)
 	SET (CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "-O2 -g")
 endif(USE_CLANG)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/../bin)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/../bin)
 
 add_definitions(-std=c++11)
 
@@ -39,14 +40,37 @@ PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${ProtobufTestsProtoSources})
 
 aux_source_directory(. SRC_LIST)
 
+set(SRC_LIST
+    ./main.cpp
+    ./ServerApplication.cpp
+    ./ServerApplicationImpl.cpp
+    ./ServerApplicationImpl_child.cpp
+    ./ServerApplicationImpl_helpers.cpp
+    ./StreamLog.cpp
+    ./ServerApplication.h
+    ./ServerApplicationImpl.h
+    ./StreamLog.h)
+
 set(SRC_LIST_MESSAGE
     ./message/MessageProcessorBase.h
     ./message/MessageDispatcher.h
     ./message/MessageDispatcher.cpp
     ./message/MessageProcessorVirtualTemplate.h
     ./message/ServerStatusMessageProcessor.h
-    ./message/ServerStatusMessageProcessor.cpp)
+    ./message/ServerStatusMessageProcessor.cpp
+    ./message/MessageProcessorFactoryMethod.h)
 
+
+set(SRC_SHARED
+    ./message/MessageProcessorBase.h
+    ./message/MessageProcessorBase.cpp
+    ./message/MessageProcessorVirtualTemplate.h
+    ./message/EchoMessageProcessor.h
+    ./message/EchoMessageProcessor.cpp
+    ./message/MessageProcessorFactoryMethod.h
+    ./message/lib/EchoMessageProcessor.fact.cpp)
+
+add_library(EchoMessageProcessor SHARED ${SRC_SHARED})
 add_executable(${PROJECT_NAME} ${SRC_LIST} ${SRC_LIST_MESSAGE} ${PROTO_SRCS} ${PROTO_HDRS})
 
 target_link_libraries(yas-server ${PROTOBUF_LIBRARY})
