@@ -34,11 +34,10 @@ set (ProtobufTestsProtoSources
     ../proto/Message.proto
     ../proto/ServerStatus.proto
     ../proto/Echo.proto
+    ../proto/Stub.proto
 )
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${ProtobufTestsProtoSources})
-
-aux_source_directory(. SRC_LIST)
 
 set(SRC_LIST
     ./main.cpp
@@ -61,13 +60,22 @@ set(SRC_LIST_MESSAGE
     ./message/MessageProcessorFactoryMethod.h)
 
 
-set(SRC_SHARED
+set(SRC_SHARED_ECHO
     ./message/EchoMessageProcessor.h
     ./message/EchoMessageProcessor.cpp
     ./message/MessageProcessorFactoryMethod.h
     ./message/lib/EchoMessageProcessor.fact.cpp)
 
-add_library(EchoMessageProcessor SHARED ${SRC_SHARED} ${PROTO_HDRS})
+
+set(SRC_SHARED_STUB
+    ./message/StubMessageProcessor.h
+    ./message/StubMessageProcessor.cpp
+    ./message/MessageProcessorFactoryMethod.h
+    ./message/lib/StubMessageProcessor.fact.cpp)
+
+add_library(EchoMessageProcessor SHARED ${SRC_SHARED_ECHO} ${PROTO_HDRS})
+add_library(StubMessageProcessor SHARED ${SRC_SHARED_STUB} ${PROTO_HDRS})
+
 add_executable(${PROJECT_NAME} ${SRC_LIST} ${SRC_LIST_MESSAGE} ${PROTO_SRCS} ${PROTO_HDRS})
 
 target_link_libraries(yas-server ${PROTOBUF_LIBRARY} dl)

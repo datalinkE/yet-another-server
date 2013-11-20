@@ -1,0 +1,8 @@
+package yas.proto;
+
+message StubQuery {
+}
+
+message StubAnswer {
+	optional string comment = 1;
+}
