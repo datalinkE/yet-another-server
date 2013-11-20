@@ -67,8 +67,9 @@ void child_func(int childnum)
 
     string serialQ= q.SerializeAsString();
     size_t serialSize = serialQ.size();
+    size_t serialSizeNet = htonl(serialSize);
 
-    bytes_sent = send(sock, &serialSize, sizeof(size_t), 0);
+    bytes_sent = send(sock, &serialSizeNet, sizeof(size_t), 0);
     sleep(1);
     cout << "yas-client #" << childnum
            <<" sent "<< bytes_sent << " (message size)" << ::endl;
@@ -78,10 +79,11 @@ void child_func(int childnum)
     cout << "yas-client #" << childnum
            <<" sent "<< bytes_sent << " (message)" << ::endl;
 
-    bytes_recieved = recv(sock, &serialSize, sizeof(size_t), 0);
+    bytes_recieved = recv(sock, &serialSizeNet, sizeof(size_t), 0);
     sleep(1);
     cout << "yas-client #" << childnum
            <<" recieved "<< bytes_recieved << " bytes(message size)" << ::endl;
+    serialSize = ntohl(serialSizeNet);
 
     bytes_recieved = recv(sock, buffer, serialSize, 0);
     sleep(1);

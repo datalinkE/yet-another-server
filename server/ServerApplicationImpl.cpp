@@ -27,6 +27,7 @@ ServerApplicationImpl::ServerApplicationImpl(unsigned short port, const string n
 
     _dispatcher.addProcessor( make_shared<ServerStatusMessageProcessor> (this));
     loadMessageProcessorFromLibrary("./libEchoMessageProcessor.so");
+    loadMessageProcessorFromLibrary("./libStubMessageProcessor.so");
 
     _isListening =
         createListeningSocket() &&
@@ -40,15 +41,16 @@ ServerApplicationImpl::ServerApplicationImpl(unsigned short port, const string n
 ServerApplicationImpl::~ServerApplicationImpl()
 {
 /* not a good idea
- * we store some shared pointer objects obtained from the library (in our _dispatcher
+ * we still store some shared pointer objects obtained from the library (in our _dispatcher)
  * we'll get segfault on dlcose call
  *
- * so, just let the system unload library when needed
  *
     for(void* handle : _loadedLibs)
     {
         dlclose(handle);
     }
+
+ * so do nothing and just let the system unload library when needed
 */
 }
 
@@ -92,6 +94,8 @@ void ServerApplicationImpl::parentProcessLoop()
         while(!_shouldStop)
         {
             sleep(1);
+            // not entirely empty..
+            // process wakes up once a second to check condition
         }
 
         stopChildren();

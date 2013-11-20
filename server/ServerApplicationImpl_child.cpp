@@ -25,7 +25,10 @@ void ServerApplicationImpl::childProcessLoop()
                 clog << "client connected to child process " << getpid() << endl;
 
                 size_t serial_size = 0;
-                int nread = recv(newsock, &serial_size, sizeof(serial_size), 0);
+                size_t serial_size_net = 0;
+
+                int nread = recv(newsock, &serial_size_net, sizeof(serial_size_net), 0);
+                serial_size = ntohl(serial_size_net);
 
                 clog << "got message size, expecting " << serial_size << " bytes" << endl;
 
@@ -54,7 +57,6 @@ void ServerApplicationImpl::childProcessLoop()
                     yas::proto::Message q;
                     q.ParseFromArray(buffer.data(), serial_size);
 
-
                     yas::proto::Message ans = _dispatcher.dispatch(q);
 
                     clog << "message dispatched" << endl;
@@ -63,7 +65,8 @@ void ServerApplicationImpl::childProcessLoop()
                     serial_size = serial_ans.length();
 
                     clog << "sending ans length " << serial_size << " back to client" << endl;
-                    send(newsock, &serial_size, 4, 0);
+                    serial_size_net = htonl(serial_size);
+                    send(newsock, &serial_size_net, sizeof(size_t), 0);
 
                     size_t bytes_sent = 0;
 
