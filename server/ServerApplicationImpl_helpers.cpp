@@ -65,6 +65,20 @@ bool ServerApplicationImpl::setListeningSocketOptions()
         clog << "setsockopt() fails with " << call_result << endl;
         return false;
     }
+
+    struct timeval tv;
+
+    tv.tv_sec = 10;  /* 10 Secs Timeout */
+    tv.tv_usec = 0;  // Not init'ing this can cause strange errors
+
+    call_result = setsockopt(_listenSocketId, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
+
+    if (call_result < 0)
+    {
+        clog << "setsockopt() fails with " << call_result << endl;
+        return false;
+    }
+
     return true;
 }
 

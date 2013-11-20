@@ -1,6 +1,7 @@
 package yas.proto;
 
 message StubQuery {
+	optional int32 seed = 1;
 }
 
 message StubAnswer {

@@ -34,6 +34,7 @@ set (ProtobufTestsProtoSources
     ../proto/Message.proto
     ../proto/ServerStatus.proto
     ../proto/Echo.proto
+    ../proto/Stub.proto
 )
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${ProtobufTestsProtoSources})
